@@ -152,17 +152,17 @@ function App() {
       <div className='z-0'>
         <div
           id="map"
-          style={{ width: "100%", height: `${height-200}px`, display: "inline-block" }}
+          style={{ width: "100%", height: `${height}px`, display: "inline-block" }}
           className='z-0'
         >
           {isMapLoaded}
         </div>
       </div>
-      <div className='-mt-10 z-10 relative ' >
+      <div className='-mt-100 z-10 w-full' style={{position:'absolute', bottom:0}} >
         <div className="">
        
           {/* Horizontal Scroll Container */}
-          <div className="overflow-x-auto flex space-x-4 pb-4" >
+          <div className="overflow-x-auto flex space-x-4 pb-2 px-2" >
             {myPlaces.suggestedLocations.map((place, key) => (
               <Card
               key={place.placeName}
