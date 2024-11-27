@@ -7,6 +7,8 @@ import { mappls, mappls_plugin } from "mappls-web-maps";
 import { useRef, useState } from "react";
 import { myPlaces } from './constants/places';
 import { render } from '@testing-library/react';
+import { countAtom } from './store';
+import { useAtom } from 'jotai';
 
 const mapplsClassObject = new mappls();
 const mapplsPluginObject = new mappls_plugin();
@@ -14,7 +16,7 @@ const mapplsPluginObject = new mappls_plugin();
 function App() {
  
   const [height, setHeight] = useState(window.innerHeight);
-
+  const [count, setCount] = useAtom(countAtom);
   const mapRef = useRef(null);
   const [selectedEloc, setSelectedEloc] = useState(null);
   const cardRefs = useRef({});
@@ -23,12 +25,11 @@ function App() {
   const [error, setError] = useState(null);
 
   const handleBook = (place) => {
-    const {latitude, longitude} =  place
-    console.log(place)
-   console.log(mapRef)
+    const {latitude, longitude} =  place    
    mapRef.current.setCenter({lat: latitude,lng: longitude});
    mapRef.current.setZoom(16);
-    // alert("Booking confirmed!");
+   setCount(prev=>prev+1)
+   console.log(count)
   };
 
   const loadObject = {
@@ -43,6 +44,7 @@ function App() {
     if (navigator.geolocation) {
       await navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log(position)
           const { latitude, longitude } = position.coords;
           setCoordinates({ latitude, longitude });
           renderMap({ latitude, longitude })
