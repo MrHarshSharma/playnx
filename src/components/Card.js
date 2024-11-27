@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Card = ({ name, location, time, onBook }) => {
+const Card = ({ name, location, time, onBook, id}) => {
   return (
-    <div className="bg-white shadow-lg rounded-lg p-3 w-2/3  flex flex-col space-y-4" style={{height:'200px'}}>
+    <div className='bg-white shadow-lg rounded-lg p-3 w-2/3 flex flex-col space-y-4'  id={id} style={{height:'200px'}}>
     <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
     <p className="text-gray-600 truncate overflow-hidden whitespace-nowrap">{location}</p>
     <p className="text-gray-500">{time}</p>

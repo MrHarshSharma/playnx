@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import Layout from './components/Layout';
 import Card from './components/Card';
-import { useEffect } from 'react';
+import { createRef, useEffect } from 'react';
 import { mappls, mappls_plugin } from "mappls-web-maps";
 import { useRef, useState } from "react";
 import { myPlaces } from './constants/places';
@@ -12,15 +12,24 @@ const mapplsClassObject = new mappls();
 const mapplsPluginObject = new mappls_plugin();
 
 function App() {
-  const handleBook = () => {
-    alert("Booking confirmed!");
-  };
+ 
   const [height, setHeight] = useState(window.innerHeight);
 
   const mapRef = useRef(null);
+  const [selectedEloc, setSelectedEloc] = useState(null);
+  const cardRefs = useRef({});
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
+
+  const handleBook = (place) => {
+    const {latitude, longitude} =  place
+    console.log(place)
+   console.log(mapRef)
+   mapRef.current.setCenter({lat: latitude,lng: longitude});
+   mapRef.current.setZoom(16);
+    // alert("Booking confirmed!");
+  };
 
   const loadObject = {
     map: true,
@@ -47,6 +56,29 @@ function App() {
       setError("Geolocation is not supported by this browser.");
     }
   };
+
+
+  useEffect(() => {
+    // Populate the refs after component mounts
+    const refs = {};
+    myPlaces.suggestedLocations.forEach((place) => {
+      refs[place.eLoc] = createRef();
+    });
+    cardRefs.current = refs;
+  }, [myPlaces]);
+
+  const scrollCard = (place)=>{
+    const {eLoc, placeName} = place
+    console.log(placeName)
+    setSelectedEloc(eLoc);
+
+    // Scroll the corresponding card into view
+   
+      document.getElementById(eLoc).scrollIntoView({ behavior: 'smooth', 
+        block: 'center',  // Scroll the element to the center of the viewport
+        inline: 'center' });
+    
+  }
   const renderMap = async ({ latitude, longitude }) => {
 
     await mapplsClassObject.initialize("ca1c04dd9fe5f56403f6119b97707e66", loadObject, () => {
@@ -55,9 +87,11 @@ function App() {
         properties: {
           center: [latitude, longitude],
           zoom: 10,
+          fullscreenControl: false
         },
       });
 
+      
       mapplsClassObject.Marker({
         map: newMap,
         position: { "lat": latitude, "lng": longitude },
@@ -65,14 +99,18 @@ function App() {
         "description": "noida",
         "icon":'images/mappointer.png',
         // "icon-size": .75,
+        width: 50
       });
 
       myPlaces.suggestedLocations.map((place, key) => {
-        mapplsClassObject.Marker({
+        
+        let markerr = mapplsClassObject.Marker({
           map: newMap,
           position: { "lat": place.latitude, "lng": place.longitude },
           draggable: false,
         });
+
+        markerr.addListener('click', ()=>scrollCard(place)); 
       })
 
 
@@ -84,6 +122,7 @@ function App() {
 
 
       mapRef.current = newMap;
+      
     });
     return () => {
       if (mapRef.current) {
@@ -126,11 +165,12 @@ function App() {
           <div className="overflow-x-auto flex space-x-4 pb-4" >
             {myPlaces.suggestedLocations.map((place, key) => (
               <Card
-                key={key}
+              key={place.placeName}
+              id={place.eLoc} 
                 name={place.placeName}
                 location={place.placeAddress}
                 time="10:00 AM - 11:00 AM"
-                onBook={handleBook}
+                onBook={()=>handleBook(place)}
               />
             ))}
 
