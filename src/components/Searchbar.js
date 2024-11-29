@@ -6,7 +6,7 @@ const Searchbar = ({handleLogout}) => {
     const [logUser, setLogUser] = useAtom(logedUser)
   return (
     <div className="flex items-center justify-center fixed top-2 left-0 right-0">
-      <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm w-96">
+      <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm w-80">
         {/* Email Icon */}
         <div className="p-2">
             <img src={logUser.photoURL}
