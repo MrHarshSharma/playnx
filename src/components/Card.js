@@ -1,6 +1,9 @@
+
 import React from 'react';
 
+
 const Card = ({ name, location, time, onBook, id}) => {
+
   return (
     <div className='bg-white shadow-lg rounded-lg p-3 w-2/3 flex flex-col space-y-4'  id={id} style={{height:'200px'}}>
     <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
