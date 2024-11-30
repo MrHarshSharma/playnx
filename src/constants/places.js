@@ -123,7 +123,7 @@ export const myPlaces = {
       "mobileNo": "",
       "orderIndex": 7,
       "placeAddress": "B/19/1, Ravi Nagar, Uday Nagar, Nagpur, Maharashtra, 440001",
-      "placeName": "Ravi Nagar Park",
+      "placeName": "Ravi Nagar Park 2",
       "type": "POI"
   },
   {
@@ -321,7 +321,7 @@ export const myPlaces = {
     "mobileNo": "",
     "orderIndex": 8,
     "placeAddress": "Near Gandhi Chowk, Sadar, Nagpur, Maharashtra, 440001",
-    "placeName": "NIT Garden",
+    "placeName": "NIT Garden 2",
     "type": "POI"
   },
   {
@@ -807,7 +807,7 @@ export const myPlaces = {
       "mobileNo": "",
       "orderIndex": 5,
       "placeAddress": "Vrindavan Nagar, Nandanvan, Nagpur, Maharashtra, 440009",
-      "placeName": "Jansampark Office",
+      "placeName": "Jansampark Office 2",
       "type": "POI"
     },
     {
@@ -897,7 +897,7 @@ export const myPlaces = {
       "mobileNo": "",
       "orderIndex": 10,
       "placeAddress": "NIT Layout 2, Dattatraya Nagar, Nagpur, Maharashtra, 440024",
-      "placeName": "Park",
+      "placeName": "Park 2",
       "type": "POI"
     },
     {

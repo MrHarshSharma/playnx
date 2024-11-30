@@ -1,14 +1,37 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebaseConfig";
+import { app, auth, db } from "../firebaseConfig";
 import { useAtom } from "jotai";
 import { logedUser } from "../store";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
+import requestNotificationPermission from "../constants/requestNotificationPermission";
+
 
 
 const ProtectedRoute = ({ children }) => {
   const [user, loading] = useAuthState(auth);
 const [loguser, setLogUser] = useAtom(logedUser)
+
+
+const saveUserToFirestore = async (user) => {
+    try {
+      const userDoc = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        lastLogin: new Date().toISOString(),
+      };
+
+      // Save the user under the "users" collection
+      await setDoc(doc(db, "users", user.uid), userDoc, { merge: true });
+      console.log("User successfully saved to Firestore!");
+    } catch (error) {
+      console.error("Error saving user to Firestore:", error.message);
+    }
+  };
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -19,7 +42,9 @@ const [loguser, setLogUser] = useAtom(logedUser)
   }
 if(user){
     setLogUser(user)
-
+    console.log(user)
+    requestNotificationPermission()
+    saveUserToFirestore(user);
 }
 
   return children;
