@@ -5,7 +5,6 @@ import { app, auth, db } from "../firebaseConfig";
 import { useAtom } from "jotai";
 import { logedUser } from "../store";
 import { doc, getFirestore, setDoc } from "firebase/firestore";
-import requestNotificationPermission from "../constants/requestNotificationPermission";
 
 
 
@@ -43,7 +42,7 @@ const saveUserToFirestore = async (user) => {
 if(user){
     setLogUser(user)
     console.log(user)
-    requestNotificationPermission()
+
     saveUserToFirestore(user);
 }
 

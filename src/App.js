@@ -6,23 +6,53 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from './routes/ProtectedRoutes';
-import NotificationPage from './pages/NotificationPage';
+
+import { useEffect, useState } from 'react';
+
+import { onMessage } from 'firebase/messaging';
+import { generateToken, messaging } from './firebaseConfig';
+import Notification from './components/Notification';
 
 function App() {
 
-  // Register the service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("/firebase-messaging-sw.js") // Make sure this is the correct path to your service worker
-    .then((registration) => {
-      console.log("Service Worker registered with scope:", registration.scope);
-    })
-    .catch((error) => {
-      console.error("Service Worker registration failed:", error);
-    });
-}
+
+const [notification, setNotification] = useState(null);
+
+const showNotification = (message, type) => {
+  setNotification({ message, type });
+
+  // Automatically hide notification after 3 seconds
+  setTimeout(() => {
+    setNotification(null);
+  }, 3000);
+};
+
+useEffect(()=>{
+  const fetchToken = async () =>{
+
+    
+    await generateToken()
+    
+  }
+  fetchToken()
+  onMessage(messaging,(payload)=>{
+    console.log(payload)
+    showNotification(payload.notification.body,"success")
+  })
+},[])
+
 
   return (
+<div>
+{notification && (
+  <Notification
+    message={notification.message}
+    type={notification.type}
+    onClose={() => setNotification(null)}
+  />
+)}
+
+
     <Router>
       <Routes>
      
@@ -37,16 +67,10 @@ if ("serviceWorker" in navigator) {
           }
         />
 
-        <Route
-          path="/noti"
-          element={
-            <ProtectedRoute>
-              <NotificationPage />
-            </ProtectedRoute>
-          }
-        />
+       
       </Routes>
     </Router>
+    </div>
   );
 }
 

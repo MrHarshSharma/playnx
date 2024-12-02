@@ -12,6 +12,7 @@ import { countAtom, logedUser } from "../store";
 import { useAtomDevtools } from "jotai-devtools";
 import Searchbar from "../components/Searchbar";
 
+
 const mapplsClassObject = new mappls();
 const mapplsPluginObject = new mappls_plugin();
 
@@ -36,9 +37,9 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
 
   const handleBook = (place) => {
-    const {latitude, longitude} =  place    
-   mapRef.current.setCenter({lat: latitude,lng: longitude});
-   mapRef.current.setZoom(16);
+    const { latitude, longitude } = place
+    mapRef.current.setCenter({ lat: latitude, lng: longitude });
+    mapRef.current.setZoom(16);
 
 
   };
@@ -59,7 +60,7 @@ const Dashboard = () => {
           const { latitude, longitude } = position.coords;
           setCoordinates({ latitude, longitude });
           renderMap({ latitude, longitude })
-        
+
         },
         (error) => {
           setError(error.message);
@@ -80,17 +81,19 @@ const Dashboard = () => {
     cardRefs.current = refs;
   }, [myPlaces]);
 
-  const scrollCard = (place)=>{
-    const {eLoc, placeName} = place
+  const scrollCard = (place) => {
+    const { eLoc, placeName } = place
     console.log(placeName)
     setSelectedEloc(eLoc);
 
     // Scroll the corresponding card into view
-   
-      document.getElementById(eLoc).scrollIntoView({ behavior: 'smooth', 
-        block: 'center',  // Scroll the element to the center of the viewport
-        inline: 'center' });
-    
+
+    document.getElementById(eLoc).scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',  // Scroll the element to the center of the viewport
+      inline: 'center'
+    });
+
   }
   const renderMap = async ({ latitude, longitude }) => {
 
@@ -104,26 +107,26 @@ const Dashboard = () => {
         },
       });
 
-      
+
       mapplsClassObject.Marker({
         map: newMap,
         position: { "lat": latitude, "lng": longitude },
         draggable: false,
         "description": "noida",
-        "icon":'images/mappointer.png',
+        "icon": 'images/mappointer.png',
         // "icon-size": .75,
         width: 50
       });
 
       myPlaces.suggestedLocations.map((place, key) => {
-        
+
         let markerr = mapplsClassObject.Marker({
           map: newMap,
           position: { "lat": place.latitude, "lng": place.longitude },
           draggable: false,
         });
 
-        markerr.addListener('click', ()=>scrollCard(place)); 
+        markerr.addListener('click', () => scrollCard(place));
       })
 
 
@@ -135,7 +138,7 @@ const Dashboard = () => {
 
 
       mapRef.current = newMap;
-      
+
     });
     return () => {
       if (mapRef.current) {
@@ -157,7 +160,7 @@ const Dashboard = () => {
       window.removeEventListener('resize', handleResize);
     };
 
-   
+
 
   }, []);
 
@@ -167,41 +170,40 @@ const Dashboard = () => {
     //   <button onClick={handleLogout}>Logout</button>
     // </div>
     <Layout>
-    
-    <div className='z-0'>
-      <div
-        id="map"
-        style={{ width: "100%", height: `${height}px`, display: "inline-block" }}
-        className='z-0'
-      >
-        {isMapLoaded}
-      </div>
-    </div>
-    <div className='-mt-100 z-10 w-full' style={{position:'absolute', bottom:0}} >
-      <div className="">
-     
-        {/* Horizontal Scroll Container */}
-        <div className="overflow-x-auto flex space-x-4 pb-2 px-2" >
-          {myPlaces.suggestedLocations.map((place, key) => (
-            <Card
-            key={place.placeName}
-            id={place.eLoc} 
-              name={place.placeName}
-              location={place.placeAddress}
-              time="10:00 AM - 11:00 AM"
-              onBook={()=>handleBook(place)}
-            />
-          ))}
-
-
-
-          {/* Add more cards as needed */}
+      <div className='z-0'>
+        <div
+          id="map"
+          style={{ width: "100%", height: `${height}px`, display: "inline-block" }}
+          className='z-0'
+        >
+          {isMapLoaded}
         </div>
       </div>
-    </div>
+      <div className='-mt-100 z-10 w-full' style={{ position: 'absolute', bottom: 0 }} >
+        <div className="">
 
-    <Searchbar handleLogout = {handleLogout}/>
-  </Layout>
+          {/* Horizontal Scroll Container */}
+          <div className="overflow-x-auto flex space-x-4 pb-2 px-2" >
+            {myPlaces.suggestedLocations.map((place, key) => (
+              <Card
+                key={place.placeName}
+                id={place.eLoc}
+                name={place.placeName}
+                location={place.placeAddress}
+                time="10:00 AM - 11:00 AM"
+                onBook={() => handleBook(place)}
+              />
+            ))}
+
+
+
+            {/* Add more cards as needed */}
+          </div>
+        </div>
+      </div>
+
+      <Searchbar handleLogout={handleLogout} />
+    </Layout>
   );
 };
 
