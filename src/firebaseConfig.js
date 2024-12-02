@@ -3,6 +3,8 @@ import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { deviceToken } from "./store";
+import { useSetAtom } from "jotai";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDzfj-FvDIseA1J8MnMiNzNkOhE8P-3seI",
@@ -30,5 +32,7 @@ export const generateToken = async () => {
         })
 
         console.log(token)
+        localStorage.setItem('dt', token)
     }
 }
+

@@ -11,6 +11,7 @@ import { useAtom } from 'jotai';
 import { countAtom, logedUser } from "../store";
 import { useAtomDevtools } from "jotai-devtools";
 import Searchbar from "../components/Searchbar";
+import { toast } from "react-toastify";
 
 
 const mapplsClassObject = new mappls();
@@ -36,11 +37,44 @@ const Dashboard = () => {
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
 
+const showNotification = async () =>{
+  let deviceToken =localStorage.getItem('dt') , additionalData;
+
+  if (!deviceToken) {
+    toast.error("No token passed");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:5000/send-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deviceToken,
+        title :'random titile',
+        body:'random body',
+        additionalData: additionalData ? JSON.parse(additionalData) : {},
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      toast.success("Notification sent successfully!");
+    } else {
+      toast.error(`Error: ${data.error}`);
+    }
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    toast.error("Failed to send notification.");
+  }
+}
+
   const handleBook = (place) => {
     const { latitude, longitude } = place
     mapRef.current.setCenter({ lat: latitude, lng: longitude });
     mapRef.current.setZoom(16);
-
+    showNotification()
 
   };
 
