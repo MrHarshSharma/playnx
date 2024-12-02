@@ -10,7 +10,7 @@ import ProtectedRoute from './routes/ProtectedRoutes';
 import { useEffect, useState } from 'react';
 
 import { onMessage } from 'firebase/messaging';
-import { generateToken, messaging } from './firebaseConfig';
+
 import Notification from './components/Notification';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
@@ -32,17 +32,7 @@ const showNotification = (message, type) => {
 
 
 useEffect(()=>{
-  const fetchToken = async () =>{
-
-    
-    await generateToken()
-    
-  }
-  fetchToken()
-  onMessage(messaging,(payload)=>{
-    console.log(payload)
-    showNotification(payload.notification.body,"success")
-  })
+ 
 },[])
 
 

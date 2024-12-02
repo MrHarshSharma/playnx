@@ -22,17 +22,4 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const messaging = getMessaging(app);
 
-export const generateToken = async () => {
-    const permission = await Notification.requestPermission()
-    console.log(permission)
-    if (permission === "granted") {
-
-        const token = await getToken(messaging, {
-            vapidKey: "BIOhawOi7hoAyghfuoTYSu4WZSBF6Ma7pQexFwSAExt5NpBxQw1sbgDDLmt_AyMj97xopYuwnZm6ICOiFl6_BQs"
-        })
-
-        console.log(token)
-        localStorage.setItem('dt', token)
-    }
-}
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import Layout from '../components/Layout';
 import Card from '../components/Card';
 import { createRef, useEffect } from 'react';
@@ -12,19 +12,16 @@ import { countAtom, logedUser } from "../store";
 import { useAtomDevtools } from "jotai-devtools";
 import Searchbar from "../components/Searchbar";
 import { toast } from "react-toastify";
+import BookingForm from "../components/BookingForm";
+import { addDoc, arrayUnion, collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 
 const mapplsClassObject = new mappls();
 const mapplsPluginObject = new mappls_plugin();
 
 const Dashboard = () => {
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-    } catch (error) {
-      console.error("Error logging out: ", error.message);
-    }
-  };
+  
+  const [isOpen, setIsOpen] = useState(false);
   const [count, setCount] = useAtom(countAtom);
   const [logUser, setLogUser] = useAtom(logedUser)
   useAtomDevtools(countAtom, "Count Atom");
@@ -36,46 +33,73 @@ const Dashboard = () => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
-
-const showNotification = async () =>{
-  let deviceToken =localStorage.getItem('dt') , additionalData;
-
-  if (!deviceToken) {
-    toast.error("No token passed");
-    return;
-  }
-
-  try {
-    const response = await fetch("http://localhost:5000/send-notification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        deviceToken,
-        title :'random titile',
-        body:'random body',
-        additionalData: additionalData ? JSON.parse(additionalData) : {},
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      toast.success("Notification sent successfully!");
-    } else {
-      toast.error(`Error: ${data.error}`);
-    }
-  } catch (error) {
-    console.error("Error sending notification:", error);
-    toast.error("Failed to send notification.");
-  }
-}
+  const [formData, setFormData] = useState({
+    players: "",
+    date: "",
+    time: "",
+    sport: "",
+    location:''
+  });
 
   const handleBook = (place) => {
     const { latitude, longitude } = place
     mapRef.current.setCenter({ lat: latitude, lng: longitude });
     mapRef.current.setZoom(16);
-    showNotification()
+    setIsOpen(true)
+    setFormData((prev) => ({ ...prev, location: place }));
 
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Form submitted");
+    console.log(formData)
+    setIsOpen(false); // Close modal on submit
+
+    try {
+      // Get a reference to the user's document in the "bookings" collection
+      const userDocRef = doc(db, "bookings", logUser.uid);
+    
+      // Fetch the current document data
+      const docSnap = await getDoc(userDocRef);
+    
+      // Add the new booking to the existing array, along with a timestamp
+      const newBooking = {
+        ...formData,
+        timestamp: Date.now(),  // Add server-side timestamp
+      };
+    
+      if (docSnap.exists()) {
+        // If the document exists, update it by adding the new booking
+        await updateDoc(userDocRef, {
+          bookings: arrayUnion(newBooking),  // Adds new booking while preserving the existing ones
+        });
+        console.log("Booking successfully added to Firestore with timestamp!");
+      } else {
+        // If the document does not exist, create a new document with the first booking
+        await setDoc(userDocRef, {
+          bookings: [newBooking],  // Create a new array with the first booking
+        });
+        console.log("New booking document created in Firestore!");
+      }
+    } catch (error) {
+      console.error("Error saving booking to Firestore:", error.message);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error("Error logging out: ", error.message);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+   
   };
 
   const loadObject = {
@@ -204,6 +228,9 @@ const showNotification = async () =>{
     //   <button onClick={handleLogout}>Logout</button>
     // </div>
     <Layout>
+    {isOpen && (
+        <BookingForm handleSubmit={handleSubmit} setIsOpen={setIsOpen} formData={formData} setFormData={setFormData} handleChange={handleChange} />
+    )}
       <div className='z-0'>
         <div
           id="map"
