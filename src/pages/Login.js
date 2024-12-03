@@ -4,6 +4,7 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebaseConfig";
 import { FcGoogle } from "react-icons/fc";
+import { appRoutes } from "../constants/appRoutes";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Login = () => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-      navigate("/dashboard");
+      navigate(appRoutes.DASHBOARD);
     } catch (error) {
       console.error("Error logging in: ", error.message);
     }

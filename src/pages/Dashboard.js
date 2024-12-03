@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
 import { useAtom } from 'jotai';
 import { countAtom, logedUser } from "../store";
 import { useAtomDevtools } from "jotai-devtools";
-import Searchbar from "../components/Searchbar";
+import HomeSearchbar from "../components/HomeSearchbar";
 import { toast } from "react-toastify";
 import BookingForm from "../components/BookingForm";
 import { addDoc, arrayUnion, collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
@@ -263,7 +263,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <Searchbar handleLogout={handleLogout} />
+      <HomeSearchbar handleLogout={handleLogout} />
     </Layout>
   );
 };
