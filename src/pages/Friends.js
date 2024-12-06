@@ -178,7 +178,7 @@ function Friends() {
     }
     return (
         <Layout>
-        <Notifications />
+
             <div className='p-4'>
                 <div className="flex items-center justify-center fixed top-7 left-0 right-0">
                     <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm w-80">
