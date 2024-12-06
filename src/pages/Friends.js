@@ -5,6 +5,7 @@ import { logedUser, userFriendList, userFriendRequests } from '../store';
 import { arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { fetchMe } from '../constants/genericFunctions';
+import Notifications from '../components/Notification';
 
 function Friends() {
     const [logUser, setLogUser] = useAtom(logedUser)
@@ -177,6 +178,7 @@ function Friends() {
     }
     return (
         <Layout>
+        <Notifications />
             <div className='p-4'>
                 <div className="flex items-center justify-center fixed top-7 left-0 right-0">
                     <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm w-80">

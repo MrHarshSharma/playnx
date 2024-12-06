@@ -42,7 +42,9 @@ const showNotification = (message, type) => {
   }, 3000);
 };
 useEffect(() => {
-  setTimeout(() => setLoading(false), 3000); // Simulates data loading
+  setTimeout(() => setLoading(false), 3000); 
+  // Simulates data loading
+
 },[]);
 
 useEffect(() => {
@@ -88,6 +90,7 @@ useEffect(() => {
     setLoading(false);
   }
 }, [logUser]); 
+
 
 
   return (
