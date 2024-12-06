@@ -19,7 +19,9 @@ import { appRoutes } from './constants/appRoutes';
 import { useAtom } from 'jotai';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { logedUser, userFriendRequests, userNewRequests } from './store';
+import { logedUser, userFriendList, userFriendRequests, userNewRequests } from './store';
+import { useAtomDevtools } from "jotai-devtools";
+import Spinner from './components/Spinner';
 
 function App() {
 
@@ -28,6 +30,8 @@ const [notification, setNotification] = useState(null);
 const [friendRequests, setFriendRequests] = useAtom(userFriendRequests);
 const [newRequests, setNewRequests] = useAtom(userNewRequests); 
 const [loading, setLoading] = useState(true);
+useAtomDevtools(logedUser, "logedUser");
+useAtomDevtools(userFriendList, "myfriends");
 
 const showNotification = (message, type) => {
   setNotification({ message, type });
@@ -37,6 +41,9 @@ const showNotification = (message, type) => {
     setNotification(null);
   }, 3000);
 };
+useEffect(() => {
+  setTimeout(() => setLoading(false), 3000); // Simulates data loading
+},[]);
 
 useEffect(() => {
   if (logUser) {
@@ -60,7 +67,7 @@ useEffect(() => {
           }
 
           setFriendRequests(currentRequests);
-          
+
           console.log(newRequestIds, currentRequests, newRequests)
 
         } else {
@@ -93,6 +100,13 @@ useEffect(() => {
     onClose={() => setNotification(null)}
   />
 )}
+
+{loading &&  (
+  <div className='h-full w-full backdrop-blur-md absolute z-50'>
+  <Spinner />
+  </div>
+) }
+
 
     <Router>
       <Routes>

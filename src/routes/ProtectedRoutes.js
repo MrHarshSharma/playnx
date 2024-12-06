@@ -5,6 +5,8 @@ import { app, auth, db } from "../firebaseConfig";
 import { useAtom } from "jotai";
 import { logedUser } from "../store";
 import { doc, getFirestore, setDoc } from "firebase/firestore";
+import { fetchMyData } from "../constants/genericFunctions";
+import Spinner from "../components/Spinner";
 
 
 
@@ -19,6 +21,8 @@ const saveUserToFirestore = async (user) => {
       email: user.email,
       displayName: user.displayName,
       photoURL: user.photoURL,
+      friendList:[],
+      friendReq:[],
       lastLogin: new Date().toISOString(),
     };
 
@@ -32,18 +36,24 @@ const saveUserToFirestore = async (user) => {
 
 useEffect(()=>{
 
+  async function registerUser(){
+    let checkCurrentUser = await fetchMyData(user.uid)
+    if(checkCurrentUser.length==0){
+      saveUserToFirestore(user)
+    }
+  }
+
   if(user){
     setLogUser(user)
     console.log(user)
-  
-    saveUserToFirestore(user);
+    registerUser()
   }
 
 
 },[user])
 
 if (loading) {
-  return <p>Loading...</p>;
+  return <Spinner/>;
 }
 
 if (!user) {

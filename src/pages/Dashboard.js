@@ -8,8 +8,8 @@ import { useRef, useState } from "react";
 import { myPlaces } from '../constants/places';
 import { render } from '@testing-library/react';
 import { useAtom } from 'jotai';
-import { countAtom, logedUser } from "../store";
-import { useAtomDevtools } from "jotai-devtools";
+import { countAtom, logedUser, userFriendList } from "../store";
+
 import HomeSearchbar from "../components/HomeSearchbar";
 import { toast } from "react-toastify";
 import BookingForm from "../components/BookingForm";
@@ -24,8 +24,6 @@ const Dashboard = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [count, setCount] = useAtom(countAtom);
   const [logUser, setLogUser] = useAtom(logedUser)
-  useAtomDevtools(countAtom, "Count Atom");
-  useAtomDevtools(logedUser, "logedUser");
   const [height, setHeight] = useState(window.innerHeight);
   const mapRef = useRef(null);
   const [selectedEloc, setSelectedEloc] = useState(null);

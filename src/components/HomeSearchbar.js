@@ -1,66 +1,51 @@
 import { useAtom } from "jotai";
 import React, { useEffect, useState } from "react";
-import { logedUser, userNewRequests } from "../store";
+import { logedUser, userFriendList, userNewRequests } from "../store";
 import { collection, doc, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { MdLogout } from "react-icons/md";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { appRoutes } from "../constants/appRoutes";
 import { useNavigate } from "react-router-dom";
+import { fetchMe } from "../constants/genericFunctions";
 
 const HomeSearchbar = ({ handleLogout }) => {
   const navigate = useNavigate();
 
   const [logUser, setLogUser] = useAtom(logedUser)
-  const [myFriendList, setMyFriendList] = useState([])
+  const [myFriendList, setMyFriendList] = useAtom(userFriendList)
   const [searchedPlace, serSearchedPlace] = useState('')
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-const [newFrndReq, setnewFrndReq] = useAtom(userNewRequests)
+  const [newFrndReq, setnewFrndReq] = useAtom(userNewRequests)
 
-async function fetchMe(myId) {
-  try {
-      // Create a reference to the 'users' collection
-      const usersCollection = collection(db, "users");
 
-      // Create a query to fetch documents where the document ID is not equal to loggedInUserId
-      const usersQuery = query(usersCollection, where("__name__", "==", myId));
 
-      // Execute the query and get the documents
-      const querySnapshot = await getDocs(usersQuery);
-
-      // Map the documents to an array of user data
-      const users = querySnapshot.docs.map(doc => (doc.data()));
-      
-      setMyFriendList(users?.[0]?.friendList);
-    console.log(users?.[0]?.friendList);
-      return users;
-  } catch (error) {
-      console.error("Error fetching users:", error.message);
-      return [];
-  }
-}
-
-useEffect(()=>{
-  if(logUser){
-    fetchMe(logUser.uid)
-    console.log("loged user", logUser.uid)
-  }
-},[logUser])
   useEffect(() => {
-    console.log(newFrndReq)
+    async function getME() {
+      let friends = await fetchMe(logUser.uid)
+      setMyFriendList(friends)
+      console.log(friends)
+      console.log("loged user", logUser.uid)
+    }
+    if (logUser) {
+      getME()
+    }
+  }, [logUser])
+  useEffect(() => {
+
     setData([])
     const user = logUser; // Get the logged-in user
-    
+
     if (user) {
-      console.log("userrrrrrr", user)
+      // console.log("userrrrrrr", user)
       const friendsList = myFriendList; // Replace with actual user document IDs
       const unsubscribeFunctions = []; // Store unsubscribe functions for cleanup
 
       // Fetch data for multiple document IDs
-      friendsList && friendsList.forEach((userUid) => {
+      friendsList && friendsList.length > 0 && friendsList.forEach((userUid) => {
         const userDocRef = doc(db, "bookings", userUid.id); // Reference to the user's document
 
         // Set up onSnapshot listener for each document
@@ -98,10 +83,10 @@ useEffect(()=>{
       <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm w-80">
         {/* Email Icon */}
         <div className="p-2 relative">
-        {newFrndReq.length > 0 && (
+          {newFrndReq.length > 0 && (
 
-          <div className="ml-2 w-3 h-3 absolute bg-green-500 rounded-full right-0 top-1"></div>
-        )}
+            <div className="ml-2 w-3 h-3 absolute bg-green-500 rounded-full right-0 top-1"></div>
+          )}
           <img src={logUser?.photoURL}
             className="w-10 h-10 rounded-full object-cover" onClick={() => setIsPopoverOpen((prev) => !prev)} />
 
@@ -110,13 +95,13 @@ useEffect(()=>{
           <div className="absolute top-12 left-3 mt-2 w-2/3 bg-white shadow-lg border rounded ">
             <div className="p-4">
               <span className="right-5 absolute flex gap-3 top-5" >
-              <span className="relative">
-              {newFrndReq.length > 0 && (
-                <div className="ml-2 w-2 h-2 absolute bg-green-500 rounded-full -right-1 -top-1"></div>
-              )}
-              <IoPersonAddOutline fontSize={20} onClick={()=> navigate(appRoutes.FRIENDS)}/>
-              </span>
-              <MdLogout fontSize={20} onClick={() => handleLogout()} />
+                <span className="relative">
+                  {newFrndReq.length > 0 && (
+                    <div className="ml-2 w-2 h-2 absolute bg-green-500 rounded-full -right-1 -top-1"></div>
+                  )}
+                  <IoPersonAddOutline fontSize={20} onClick={() => navigate(appRoutes.FRIENDS)} />
+                </span>
+                <MdLogout fontSize={20} onClick={() => handleLogout()} />
               </span>
               <h3 className="text-lg font-semibold mb-2">Invitations</h3>
               {data.length > 0 ? (

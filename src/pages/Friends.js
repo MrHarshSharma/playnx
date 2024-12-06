@@ -1,15 +1,41 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import { useAtom } from 'jotai';
-import { logedUser, userFriendRequests } from '../store';
+import { logedUser, userFriendList, userFriendRequests } from '../store';
 import { arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { fetchMe } from '../constants/genericFunctions';
 
 function Friends() {
     const [logUser, setLogUser] = useAtom(logedUser)
+    const [myFriendList, setMyFriendList] = useState([])
     const [mayknowPeople, setMayKnowPeople] = useState([])
     const [friendReqs, setFriendReqs] = useAtom(userFriendRequests)
+    const [activeTab, setActiveTab] = useState("tab1");
+    const [updatedMayknowPeople, setUpdatedMayknowPeople] = useState([])
+    const [sudoState, setSudoState] = useState(0)
+    useEffect(()=>{
+        filterKnowPeople()
 
+    },[mayknowPeople, myFriendList])
+
+    const refreshData = () =>{
+        setSudoState(prev=>prev+1)
+    }
+
+    const filterKnowPeople = () =>{
+        if(myFriendList?.length>0){
+
+            const filteredMayknowPeople = mayknowPeople.filter(
+                (person) => !myFriendList.some((friend) => friend.id === person.id)
+            );
+            setUpdatedMayknowPeople(filteredMayknowPeople)
+        }else if(!myFriendList){
+            setUpdatedMayknowPeople(mayknowPeople)
+
+        }
+    }
+   
     async function fetchUsersExcludingLoggedIn(loggedInUserId) {
         try {
             // Create a reference to the 'users' collection
@@ -48,52 +74,66 @@ function Friends() {
             console.log("Friend request sent successfully!");
         } catch (error) {
             console.error("Error sending friend request:", error.message);
+        }finally{
+            refreshData()
         }
     }
 
     async function acceptFriendRequest(person) {
         try {
-          // Reference to sender and receiver documents
-          const userDocRefSender = doc(db, "users", person.id);
-          const userDocRefReceiver = doc(db, "users", logUser.uid);
-      
-          // Fetch the receiver's document to get the current friendReq array
-          const receiverDocSnap = await getDoc(userDocRefReceiver);
-          if (receiverDocSnap.exists()) {
-            const receiverData = receiverDocSnap.data();
-            const currentFriendReq = receiverData.friendReq || []; // Get current friendReq array or empty
-      
-            // Filter out the accepted friend request
-            const updatedFriendReq = currentFriendReq.filter((req) => req.id !== person.id);
-      
-            // Update the friendReq array in receiver's document
-            await updateDoc(userDocRefReceiver, {
-              friendReq: updatedFriendReq, // Update with filtered array
-              friendList: arrayUnion(person), // Add the accepted friend to friendList
-            });
-      
-            // Update the friendList array in sender's document
-            await updateDoc(userDocRefSender, {
-              friendList: arrayUnion({
-                id: logUser.uid,
-                photoURL: logUser.photoURL,
-                displayName: logUser.displayName,
-              }), // Add the receiver's info to sender's friendList
-            });
-      
-            console.log("Friend request accepted successfully!");
-          } else {
-            console.error("Receiver document does not exist!");
-          }
+            // Reference to sender and receiver documents
+            const userDocRefSender = doc(db, "users", person.id);
+            const userDocRefReceiver = doc(db, "users", logUser.uid);
+
+            // Fetch the receiver's document to get the current friendReq array
+            const receiverDocSnap = await getDoc(userDocRefReceiver);
+            if (receiverDocSnap.exists()) {
+                const receiverData = receiverDocSnap.data();
+                const currentFriendReq = receiverData.friendReq || []; // Get current friendReq array or empty
+
+                // Filter out the accepted friend request
+                const updatedFriendReq = currentFriendReq.filter((req) => req.id !== person.id);
+
+                // Update the friendReq array in receiver's document
+                await updateDoc(userDocRefReceiver, {
+                    friendReq: updatedFriendReq, // Update with filtered array
+                    friendList: arrayUnion(person), // Add the accepted friend to friendList
+                });
+
+                // Update the friendList array in sender's document
+                await updateDoc(userDocRefSender, {
+                    friendList: arrayUnion({
+                        id: logUser.uid,
+                        photoURL: logUser.photoURL,
+                        displayName: logUser.displayName,
+                    }), // Add the receiver's info to sender's friendList
+                });
+
+                console.log("Friend request accepted successfully!");
+            } else {
+                console.error("Receiver document does not exist!");
+            }
         } catch (error) {
-          console.error("Error accepting friend request:", error.message);
+            console.error("Error accepting friend request:", error.message);
+        }finally{
+            refreshData()
         }
-      }
+    }
 
     useEffect(() => {
+        async function fetcchh() {
+            const friends = await fetchMe(logUser.uid)
+            setMyFriendList(friends)
+            console.log(friends)
+            
+        }
 
+        if(logUser){
+            fetcchh()
+        }
         fetchUsersExcludingLoggedIn(logUser?.uid);
-    }, [logUser])
+        
+    }, [logUser, sudoState])
 
 
 
@@ -121,13 +161,15 @@ function Friends() {
 
 
                 <div className="flex gap-2 ml-auto">
-                {action=='toadd'?(
-                    <span className="drop-shadow-lg" onClick={() => makeFriendRequest(people)}>Add</span>
-                    
-                ):(
-                    <span className="drop-shadow-lg" onClick={() => acceptFriendRequest(people)}>Accept</span>
+                    {action == 'toadd' && (
+                        <span className="drop-shadow-lg" onClick={() => makeFriendRequest(people)}>Add</span>
 
-                )}
+                    )} 
+                    
+                    {action == 'toaccept' && (
+                        <span className="drop-shadow-lg" onClick={() => acceptFriendRequest(people)}>Accept</span>
+
+                    )}
                 </div>
             </li>
 
@@ -148,26 +190,75 @@ function Friends() {
                     </div>
                 </div>
 
-                {friendReqs.length > 0 && (
-                    <div className='mt-20'>
-                    <span className=''>Friend requests</span>
-                    <ul className="space-y-2 mt-2">
-                        {friendReqs.map((tobefrnd) => (
-                            renderPeople('toaccept',tobefrnd)
-                        ))} 
-                        </ul>
+                <div className="w-full max-w-md mx-auto mt-20">
+                    {/* Tab Headers */}
+                    <div className="flex border-b border-gray-300">
+                        <button
+                            className={`flex-1 py-2 text-center ${activeTab === "tab1"
+                                    ? "border-b-2 border-blue-500 text-blue-500 font-bold"
+                                    : "text-gray-600 hover:text-blue-500"
+                                }`}
+                            onClick={() => setActiveTab("tab1")}
+                        >
+                            Friends
+                        </button>
+                        <button
+                            className={`flex-1 py-2 text-center ${activeTab === "tab2"
+                                    ? "border-b-2 border-blue-500 text-blue-500 font-bold"
+                                    : "text-gray-600 hover:text-blue-500"
+                                }`}
+                            onClick={() => setActiveTab("tab2")}
+                        >
+                                Requests
+                        </button>
                     </div>
-                )}
-                {mayknowPeople.length > 0 && <div className={friendReqs.length > 0 ? 'mt-10' : 'mt-20'}>
-                    <span className=''>People you may know</span>
-                    <ul className="space-y-2 mt-2">
-                        {mayknowPeople.map((people) => (
 
-                            renderPeople('toadd',people)
+                    {/* Tab Content */}
+                    <div className="p-4">
+                        {activeTab === "tab1" && (
+                            <div>
+                            {myFriendList?.length > 0 && (
+                                <div className='mt-5'>
+                                    <span className=''>Friend requests</span>
+                                    <ul className="space-y-2 mt-2">
+                                        {myFriendList.map((tobefrnd) => (
+                                            
+                                            renderPeople('toremove', tobefrnd)
+                                           
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            </div>
+                        )}
+                        {activeTab === "tab2" && (
+                            <div>
+                            {friendReqs.length > 0 && (
+                                <div className='mt-5'>
+                                    <span className=''>Friend requests</span>
+                                    <ul className="space-y-2 mt-2">
+                                        {friendReqs.map((tobefrnd) => (
+                                            renderPeople('toaccept', tobefrnd)
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {updatedMayknowPeople.length > 0 && <div className={'mt-5'}>
+                                <span className=''>People you may know</span>
+                                <ul className="space-y-2 mt-2">
+                                    {updatedMayknowPeople.map((people) => (
+            
+                                        renderPeople('toadd', people)
+            
+                                    ))}
+                                </ul>
+                            </div>}
+                            </div>
+                        )}
+                    </div>
+                </div>
 
-                        ))}
-                    </ul>
-                </div>}
+             
 
             </div>
         </Layout>
