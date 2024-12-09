@@ -8,6 +8,7 @@ import { IoPersonAddOutline } from "react-icons/io5";
 import { appRoutes } from "../constants/appRoutes";
 import { useNavigate } from "react-router-dom";
 import { fetchMe } from "../constants/genericFunctions";
+import { AiOutlineSchedule } from "react-icons/ai";
 
 const HomeSearchbar = ({ handleLogout }) => {
   const navigate = useNavigate();
@@ -95,6 +96,12 @@ const HomeSearchbar = ({ handleLogout }) => {
           <div className="absolute top-12 left-3 mt-2 w-2/3 bg-white shadow-lg border rounded ">
             <div className="p-4">
               <span className="right-5 absolute flex gap-3 top-5" >
+                <span className="relative">
+                  {newFrndReq.length > 0 && (
+                    <div className="ml-2 w-2 h-2 absolute bg-green-500 rounded-full -right-1 -top-1"></div>
+                  )}
+                  <AiOutlineSchedule fontSize={20} onClick={() => navigate(appRoutes.MYBOOKINGS)} /> 
+                </span>
                 <span className="relative">
                   {newFrndReq.length > 0 && (
                     <div className="ml-2 w-2 h-2 absolute bg-green-500 rounded-full -right-1 -top-1"></div>

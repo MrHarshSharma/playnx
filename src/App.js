@@ -22,6 +22,7 @@ import { db } from './firebaseConfig';
 import { logedUser, userFriendList, userFriendRequests, userNewRequests } from './store';
 import { useAtomDevtools } from "jotai-devtools";
 import Spinner from './components/Spinner';
+import MyBookings from './pages/MyBookings';
 
 function App() {
 
@@ -133,6 +134,14 @@ useEffect(() => {
         }
       />
        
+      <Route
+        path={appRoutes.MYBOOKINGS}
+        element={
+          <ProtectedRoute>
+            <MyBookings />
+          </ProtectedRoute>
+        }
+      />
       </Routes>
     </Router>
     </div>

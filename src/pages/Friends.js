@@ -6,6 +6,9 @@ import { arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, query, update
 import { db } from '../firebaseConfig';
 import { fetchMe } from '../constants/genericFunctions';
 import Notifications from '../components/Notification';
+import MakeFriendReq from '../components/friendManipulation/MakeFriendReq';
+import AcceptFriendReq from '../components/friendManipulation/AcceptFriendReq';
+import RemoveFriendReq from '../components/friendManipulation/RemoveFriendReq';
 
 function Friends() {
     const [logUser, setLogUser] = useAtom(logedUser)
@@ -15,6 +18,7 @@ function Friends() {
     const [activeTab, setActiveTab] = useState("tab1");
     const [updatedMayknowPeople, setUpdatedMayknowPeople] = useState([])
     const [sudoState, setSudoState] = useState(0)
+    const [loading, setLoading] = useState(false)
     useEffect(()=>{
         filterKnowPeople()
 
@@ -31,7 +35,7 @@ function Friends() {
                 (person) => !myFriendList.some((friend) => friend.id === person.id)
             );
             setUpdatedMayknowPeople(filteredMayknowPeople)
-        }else if(!myFriendList){
+        }else{
             setUpdatedMayknowPeople(mayknowPeople)
 
         }
@@ -62,64 +66,8 @@ function Friends() {
         }
     }
 
-    async function sendFriendRequest(userId, friendData) {
-        try {
-            // Reference the document for the user with the given userId
-            const userDocRef = doc(db, "users", userId);
+    
 
-            // Update the `friendReq` array with the new friend data
-            await updateDoc(userDocRef, {
-                friendReq: arrayUnion(friendData), // Add the new friend object to the array
-            });
-
-            console.log("Friend request sent successfully!");
-        } catch (error) {
-            console.error("Error sending friend request:", error.message);
-        }finally{
-            refreshData()
-        }
-    }
-
-    async function acceptFriendRequest(person) {
-        try {
-            // Reference to sender and receiver documents
-            const userDocRefSender = doc(db, "users", person.id);
-            const userDocRefReceiver = doc(db, "users", logUser.uid);
-
-            // Fetch the receiver's document to get the current friendReq array
-            const receiverDocSnap = await getDoc(userDocRefReceiver);
-            if (receiverDocSnap.exists()) {
-                const receiverData = receiverDocSnap.data();
-                const currentFriendReq = receiverData.friendReq || []; // Get current friendReq array or empty
-
-                // Filter out the accepted friend request
-                const updatedFriendReq = currentFriendReq.filter((req) => req.id !== person.id);
-
-                // Update the friendReq array in receiver's document
-                await updateDoc(userDocRefReceiver, {
-                    friendReq: updatedFriendReq, // Update with filtered array
-                    friendList: arrayUnion(person), // Add the accepted friend to friendList
-                });
-
-                // Update the friendList array in sender's document
-                await updateDoc(userDocRefSender, {
-                    friendList: arrayUnion({
-                        id: logUser.uid,
-                        photoURL: logUser.photoURL,
-                        displayName: logUser.displayName,
-                    }), // Add the receiver's info to sender's friendList
-                });
-
-                console.log("Friend request accepted successfully!");
-            } else {
-                console.error("Receiver document does not exist!");
-            }
-        } catch (error) {
-            console.error("Error accepting friend request:", error.message);
-        }finally{
-            refreshData()
-        }
-    }
 
     useEffect(() => {
         async function fetcchh() {
@@ -138,15 +86,6 @@ function Friends() {
 
 
 
-    const makeFriendRequest = (me) => {
-        const myData = {
-            id: logUser.uid,
-            photoURL: logUser.photoURL,
-            displayName: logUser.displayName,
-        };
-
-        sendFriendRequest(me.uid, myData);
-    }
 
     const renderPeople = (action, people) => {
         return (
@@ -163,13 +102,17 @@ function Friends() {
 
                 <div className="flex gap-2 ml-auto">
                     {action == 'toadd' && (
-                        <span className="drop-shadow-lg" onClick={() => makeFriendRequest(people)}>Add</span>
+                       <MakeFriendReq people={people} />
 
                     )} 
                     
                     {action == 'toaccept' && (
-                        <span className="drop-shadow-lg" onClick={() => acceptFriendRequest(people)}>Accept</span>
+                        
+                        <AcceptFriendReq refreshData={refreshData} people={people} />
+                    )}
 
+                    {action == 'toremove' && (
+                        <RemoveFriendReq refreshData={refreshData} people={people}/>
                     )}
                 </div>
             </li>
@@ -200,7 +143,7 @@ function Friends() {
                                     ? "border-b-2 border-blue-500 text-blue-500 font-bold"
                                     : "text-gray-600 hover:text-blue-500"
                                 }`}
-                            onClick={() => setActiveTab("tab1")}
+                            onClick={() => {setActiveTab("tab1"); refreshData()}}
                         >
                             Friends
                         </button>
@@ -209,7 +152,7 @@ function Friends() {
                                     ? "border-b-2 border-blue-500 text-blue-500 font-bold"
                                     : "text-gray-600 hover:text-blue-500"
                                 }`}
-                            onClick={() => setActiveTab("tab2")}
+                            onClick={() => {setActiveTab("tab2"); refreshData()}}
                         >
                                 Requests
                         </button>
